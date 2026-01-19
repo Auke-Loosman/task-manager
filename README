@@ -1,0 +1,123 @@
+Task Manager API
+================
+
+A small task management API built with Symfony, following a layered / clean architecture approach.
+
+------------------------------------------------------------
+
+Requirements
+------------
+- PHP 8.2+
+- Composer
+- Symfony CLI (optional, for local server)
+- SQLite (used by default)
+
+------------------------------------------------------------
+
+Installation
+------------
+
+1. Clone the repository
+
+   git clone https://github.com/Auke-Loosman/task-manager
+   cd task-manager
+
+2. Install dependencies
+
+   composer install
+
+3. Environment configuration
+
+   Copy the example environment file:
+
+   cp .env.local.example .env.local
+
+   The project uses SQLite by default. The database file will be created automatically in:
+
+   var/data.db
+
+4. Create the database schema
+
+   php bin/console doctrine:schema:create
+
+5. Start the application
+
+   Using Symfony CLI:
+
+   symfony serve
+
+   Or using PHP built-in server:
+
+   php -S 127.0.0.1:8000 -t public
+
+------------------------------------------------------------
+
+Running Tests
+-------------
+
+The project contains unit, integration, and functional tests.
+
+To run all tests:
+
+   php bin/phpunit
+
+Tests use a separate test environment and database configuration.
+
+------------------------------------------------------------
+
+API Endpoints
+-------------
+
+- POST /tasks
+  Create a new task
+
+- GET /tasks
+  List all tasks
+
+- GET /tasks/{id}
+  Fetch a task by ID
+
+- PATCH /tasks/{id}/status
+  Update task status (todo → in_progress → done)
+
+- DELETE /tasks/{id}
+  Delete a task (not allowed when status is done)
+
+------------------------------------------------------------
+
+Architecture
+------------
+
+The project is structured using a clean architecture approach:
+
+- Domain
+  Contains business rules, entities, value objects, and domain logic.
+
+- Application
+  Contains use cases implemented as commands, queries, and handlers.
+
+- Infrastructure
+  Contains technical details such as Doctrine persistence and repositories.
+
+- Presentation
+  Contains HTTP controllers, request DTOs, and response mapping.
+
+Symfony Messenger is used to dispatch commands and queries to their respective handlers.
+
+------------------------------------------------------------
+
+Manual Testing
+--------------
+
+In addition to automated tests, the API was manually tested using Postman.
+
+Requests were sent for:
+- Creating tasks
+- Listing tasks
+- Fetching tasks by ID
+- Updating task status
+- Deleting tasks
+
+This was used to verify correct HTTP responses and state transitions alongside the test suite.
+
+------------------------------------------------------------
