@@ -8,6 +8,7 @@ use App\Domain\Task\Task;
 use App\Domain\Task\TaskRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\Entity\TaskEntity;
 use Doctrine\ORM\EntityManagerInterface;
+use App\Domain\Task\TaskId;
 
 final class DoctrineTaskRepository implements TaskRepositoryInterface
 {
@@ -19,11 +20,11 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
     public function save(Task $task): void
     {
         $entity = new TaskEntity(
-            id: uniqid(),
+            id: $task->id()->value(),
             title: $task->title(),
             status: $task->status(),
-            createdAt: new \DateTimeImmutable(),
-            updatedAt: new \DateTimeImmutable()
+            createdAt: $task->createdAt(),
+            updatedAt: $task->updatedAt()
         );
 
         $this->entityManager->persist($entity);
@@ -40,7 +41,13 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
         $entities = $this->entityManager->getRepository(TaskEntity::class)->findAll();
 
         return array_map(
-            fn (TaskEntity $entity) => new Task($entity->title()),
+            fn (TaskEntity $entity) => Task::reconstitute(
+                TaskId::fromString($entity->id()),
+                $entity->title(),
+                $entity->status(),
+                $entity->createdAt(),
+                $entity->updatedAt()
+            ),
             $entities
         );
     }
