@@ -6,6 +6,9 @@ namespace App\Presentation\Http\Controller;
 
 use App\Application\Command\Task\CreateTaskCommand;
 use App\Presentation\Http\Request\CreateTaskRequest;
+use App\Application\Query\Task\GetAllTasksQuery;
+use App\Presentation\Http\Response\TaskResponse;
+use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -35,5 +38,22 @@ final class TaskController extends AbstractController
         );
 
         return $this->json(null, Response::HTTP_CREATED);
+    }
+
+    #[Route('/tasks', name: 'get_tasks', methods: ['GET'], priority: 1)]
+    public function list(MessageBusInterface $queryBus): JsonResponse
+    {
+        $envelope = $queryBus->dispatch(new GetAllTasksQuery());
+
+        $tasks = $envelope
+            ->last(HandledStamp::class)
+            ->getResult();
+
+        return $this->json(
+            array_map(
+                fn ($task) => TaskResponse::fromDomain($task),
+                $tasks
+            )
+        );
     }
 }

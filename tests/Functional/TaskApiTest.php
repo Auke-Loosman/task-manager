@@ -44,4 +44,33 @@ final class TaskApiTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(201);
     }
+
+    public function testTasksCanBeListed(): void
+    {
+        $client = static::createClient();
+
+        // Create a task first
+        $client->request(
+            'POST',
+            '/tasks',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['title' => 'Write assignment'])
+        );
+
+        $this->assertResponseStatusCodeSame(201);
+
+        // Fetch tasks
+        $client->request('GET', '/tasks');
+
+        $this->assertResponseIsSuccessful();
+
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertCount(1, $data);
+        $this->assertSame('Write assignment', $data[0]['title']);
+        $this->assertSame('todo', $data[0]['status']);
+    }
+
 }
