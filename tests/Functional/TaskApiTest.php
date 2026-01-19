@@ -101,4 +101,52 @@ final class TaskApiTest extends WebTestCase
         $this->assertSame('Fetch me', $task['title']);
         $this->assertSame('todo', $task['status']);
     }
+
+    public function testTaskStatusCanBeUpdated(): void
+    {
+        $client = static::createClient();
+
+        $client->request(
+            'POST',
+            '/tasks',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['title' => 'Patch me'])
+        );
+
+        $this->assertResponseStatusCodeSame(201);
+
+        $client->request('GET', '/tasks');
+        $tasks = json_decode($client->getResponse()->getContent(), true);
+
+        $id = $tasks[0]['id'];
+
+        $client->request(
+            'PATCH',
+            '/tasks/' . $id . '/status',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['status' => 'in_progress'])
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $client->request(
+            'PATCH',
+            '/tasks/' . $id . '/status',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['status' => 'done'])
+        );
+
+        $this->assertResponseIsSuccessful();
+
+        $client->request('GET', '/tasks/' . $id);
+        $task = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertSame('done', $task['status']);
+    }
 }

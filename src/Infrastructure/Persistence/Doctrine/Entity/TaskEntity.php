@@ -26,18 +26,23 @@ class TaskEntity
     #[ORM\Column(type: 'datetime_immutable')]
     private \DateTimeImmutable $updatedAt;
 
-    public function __construct(
+    private function __construct() {}
+
+    public static function create(
         string $id,
         string $title,
         string $status,
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $updatedAt
-    ) {
-        $this->id = $id;
-        $this->title = $title;
-        $this->status = $status;
-        $this->createdAt = $createdAt;
-        $this->updatedAt = $updatedAt;
+    ): self {
+        $self = new self();
+        $self->id = $id;
+        $self->title = $title;
+        $self->status = $status;
+        $self->createdAt = $createdAt;
+        $self->updatedAt = $updatedAt;
+
+        return $self;
     }
 
     public function id(): string
@@ -63,5 +68,20 @@ class TaskEntity
     public function updatedAt(): \DateTimeImmutable
     {
         return $this->updatedAt;
+    }
+
+    public function setTitle(string $title): void
+    {
+        $this->title = $title;
+    }
+
+    public function setStatus(string $status): void
+    {
+        $this->status = $status;
+    }
+
+    public function setUpdatedAt(\DateTimeImmutable $updatedAt): void
+    {
+        $this->updatedAt = $updatedAt;
     }
 }

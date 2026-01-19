@@ -10,13 +10,13 @@ final class Task
     private \DateTimeImmutable $createdAt;
     private \DateTimeImmutable $updatedAt;
     private string $title;
-    private string $status;
+    private TaskStatus $status;
 
     public function __construct(string $title)
     {
         $this->id = TaskId::generate();
         $this->title = $title;
-        $this->status = 'todo';
+        $this->status = TaskStatus::TODO;
         $this->createdAt = new \DateTimeImmutable();
         $this->updatedAt = $this->createdAt;
     }
@@ -24,7 +24,7 @@ final class Task
     public static function reconstitute(
         TaskId $id,
         string $title,
-        string $status,
+        TaskStatus $status,
         \DateTimeImmutable $createdAt,
         \DateTimeImmutable $updatedAt
     ): self {
@@ -40,7 +40,8 @@ final class Task
 
     public function markAsInProgress(): void
     {
-        $this->status = 'in_progress';
+        $this->status = TaskStatus::IN_PROGRESS;
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function title(): string
@@ -50,21 +51,26 @@ final class Task
 
     public function status(): string
     {
-        return $this->status;
+        return $this->status->value;
     }
 
     public function markAsDone(): void
     {
-        if ($this->status !== 'in_progress') {
+        if ($this->status === TaskStatus::DONE) {
+            return;
+        }
+
+        if ($this->status !== TaskStatus::IN_PROGRESS) {
             throw new \DomainException('Task must be in progress before it can be marked as done.');
         }
 
-        $this->status = 'done';
+        $this->status = TaskStatus::DONE;
+        $this->updatedAt = new \DateTimeImmutable();
     }
 
     public function delete(): void
     {
-        if ($this->status === 'done') {
+        if ($this->status === TaskStatus::DONE) {
             throw new \DomainException('Completed tasks cannot be deleted.');
         }
     }

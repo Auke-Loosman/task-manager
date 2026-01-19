@@ -9,6 +9,7 @@ use App\Domain\Task\TaskRepositoryInterface;
 use App\Infrastructure\Persistence\Doctrine\Entity\TaskEntity;
 use Doctrine\ORM\EntityManagerInterface;
 use App\Domain\Task\TaskId;
+use App\Domain\Task\TaskStatus;
 
 final class DoctrineTaskRepository implements TaskRepositoryInterface
 {
@@ -19,17 +20,29 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
 
     public function save(Task $task): void
     {
-        $entity = new TaskEntity(
-            id: $task->id()->value(),
-            title: $task->title(),
-            status: $task->status(),
-            createdAt: $task->createdAt(),
-            updatedAt: $task->updatedAt()
-        );
+        $entity = $this->entityManager
+            ->getRepository(TaskEntity::class)
+            ->find($task->id()->value());
 
-        $this->entityManager->persist($entity);
+        if ($entity === null) {
+            $entity = TaskEntity::create(
+                $task->id()->value(),
+                $task->title(),
+                $task->status(),
+                $task->createdAt(),
+                $task->updatedAt()
+            );
+
+            $this->entityManager->persist($entity);
+        } else {
+            $entity->setTitle($task->title());
+            $entity->setStatus($task->status());
+            $entity->setUpdatedAt($task->updatedAt());
+        }
+
         $this->entityManager->flush();
     }
+
 
     public function findById(string $id): ?Task
     {
@@ -44,7 +57,7 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
         return Task::reconstitute(
             TaskId::fromString($entity->id()),
             $entity->title(),
-            $entity->status(),
+            TaskStatus::from($entity->status()),
             $entity->createdAt(),
             $entity->updatedAt()
         );
@@ -58,7 +71,7 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
             fn (TaskEntity $entity) => Task::reconstitute(
                 TaskId::fromString($entity->id()),
                 $entity->title(),
-                $entity->status(),
+                TaskStatus::from($entity->status()),
                 $entity->createdAt(),
                 $entity->updatedAt()
             ),

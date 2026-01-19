@@ -11,6 +11,8 @@ use App\Application\Query\Task\GetTaskByIdQuery;
 use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Presentation\Http\Response\TaskResponse;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
+use App\Application\Command\Task\UpdateTaskStatusCommand;
+use App\Presentation\Http\Request\UpdateTaskStatusRequest;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\HttpFoundation\Response;
@@ -75,5 +77,28 @@ final class TaskController extends AbstractController
         return $this->json(
             TaskResponse::fromDomain($task)
         );
+    }
+
+    #[Route('/tasks/{id}/status', name: 'update_task_status', methods: ['PATCH'])]
+    public function updateStatus(
+        string $id,
+        UpdateTaskStatusRequest $requestDto,
+        ValidatorInterface $validator,
+        MessageBusInterface $commandBus
+    ): JsonResponse {
+        $errors = $validator->validate($requestDto);
+
+        if (count($errors) > 0) {
+            return $this->json(
+                ['errors' => (string) $errors],
+                Response::HTTP_BAD_REQUEST
+            );
+        }
+
+        $commandBus->dispatch(
+            new UpdateTaskStatusCommand($id, $requestDto->status)
+        );
+
+        return $this->json(null, Response::HTTP_NO_CONTENT);
     }
 }
