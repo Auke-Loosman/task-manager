@@ -34,4 +34,15 @@ final class TaskTest extends TestCase
 
         $task->markAsDone();
     }
+
+    public function testDoneTaskCannotBeDeleted(): void
+    {
+        $this->expectException(\DomainException::class);
+
+        $task = new Task('Write assignment');
+        $task->markAsInProgress();
+        $task->markAsDone();
+
+        $task->delete();
+    }
 }

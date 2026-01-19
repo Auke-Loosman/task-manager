@@ -39,5 +39,11 @@ final class Task
         $this->status = 'done';
     }
 
+    public function delete(): void
+    {
+        if ($this->status === 'done') {
+            throw new \DomainException('Completed tasks cannot be deleted.');
+        }
+    }
 }
 
