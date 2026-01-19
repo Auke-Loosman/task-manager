@@ -33,7 +33,21 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
 
     public function findById(string $id): ?Task
     {
-        return null;
+        $entity = $this->entityManager
+            ->getRepository(TaskEntity::class)
+            ->find($id);
+
+        if ($entity === null) {
+            return null;
+        }
+
+        return Task::reconstitute(
+            TaskId::fromString($entity->id()),
+            $entity->title(),
+            $entity->status(),
+            $entity->createdAt(),
+            $entity->updatedAt()
+        );
     }
 
     public function findAll(): array

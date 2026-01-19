@@ -49,7 +49,6 @@ final class TaskApiTest extends WebTestCase
     {
         $client = static::createClient();
 
-        // Create a task first
         $client->request(
             'POST',
             '/tasks',
@@ -61,7 +60,6 @@ final class TaskApiTest extends WebTestCase
 
         $this->assertResponseStatusCodeSame(201);
 
-        // Fetch tasks
         $client->request('GET', '/tasks');
 
         $this->assertResponseIsSuccessful();
@@ -73,4 +71,34 @@ final class TaskApiTest extends WebTestCase
         $this->assertSame('todo', $data[0]['status']);
     }
 
+    public function testTaskCanBeFetchedById(): void
+    {
+        $client = static::createClient();
+
+        $client->request(
+            'POST',
+            '/tasks',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['title' => 'Fetch me'])
+        );
+
+        $this->assertResponseStatusCodeSame(201);
+
+        $client->request('GET', '/tasks');
+        $data = json_decode($client->getResponse()->getContent(), true);
+
+        $id = $data[0]['id'];
+
+        $client->request('GET', '/tasks/' . $id);
+
+        $this->assertResponseIsSuccessful();
+
+        $task = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertSame($id, $task['id']);
+        $this->assertSame('Fetch me', $task['title']);
+        $this->assertSame('todo', $task['status']);
+    }
 }

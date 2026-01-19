@@ -7,6 +7,8 @@ namespace App\Presentation\Http\Controller;
 use App\Application\Command\Task\CreateTaskCommand;
 use App\Presentation\Http\Request\CreateTaskRequest;
 use App\Application\Query\Task\GetAllTasksQuery;
+use App\Application\Query\Task\GetTaskByIdQuery;
+use Symfony\Component\HttpKernel\Exception\NotFoundHttpException;
 use App\Presentation\Http\Response\TaskResponse;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
@@ -54,6 +56,24 @@ final class TaskController extends AbstractController
                 fn ($task) => TaskResponse::fromDomain($task),
                 $tasks
             )
+        );
+    }
+
+    #[Route('/tasks/{id}', name: 'get_task', methods: ['GET'])]
+    public function get(string $id, MessageBusInterface $queryBus): JsonResponse
+    {
+        $envelope = $queryBus->dispatch(new GetTaskByIdQuery($id));
+
+        $task = $envelope
+            ->last(HandledStamp::class)
+            ?->getResult();
+
+        if ($task === null) {
+            throw new NotFoundHttpException('Task not found');
+        }
+
+        return $this->json(
+            TaskResponse::fromDomain($task)
         );
     }
 }
