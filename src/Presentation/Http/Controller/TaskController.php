@@ -20,6 +20,8 @@ use Symfony\Component\HttpFoundation\JsonResponse;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
+use DomainException;
+
 
 final class TaskController extends AbstractController
 {
@@ -96,9 +98,16 @@ final class TaskController extends AbstractController
             );
         }
 
-        $commandBus->dispatch(
-            new UpdateTaskStatusCommand($id, $requestDto->status)
-        );
+        try {
+            $commandBus->dispatch(
+                new UpdateTaskStatusCommand($id, $requestDto->status)
+            );
+        } catch (DomainException $e) {
+            return $this->json(
+                ['error' => $e->getMessage()],
+                Response::HTTP_CONFLICT
+            );
+        }
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }
