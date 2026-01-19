@@ -149,4 +149,34 @@ final class TaskApiTest extends WebTestCase
 
         $this->assertSame('done', $task['status']);
     }
+
+    public function testTaskCanBeDeleted(): void
+    {
+        $client = static::createClient();
+
+        $client->request(
+            'POST',
+            '/tasks',
+            [],
+            [],
+            ['CONTENT_TYPE' => 'application/json'],
+            json_encode(['title' => 'Delete me'])
+        );
+
+        $this->assertResponseStatusCodeSame(201);
+
+        $client->request('GET', '/tasks');
+        $tasks = json_decode($client->getResponse()->getContent(), true);
+
+        $id = $tasks[0]['id'];
+
+        $client->request('DELETE', '/tasks/' . $id);
+
+        $this->assertResponseStatusCodeSame(204);
+
+        $client->request('GET', '/tasks');
+        $tasks = json_decode($client->getResponse()->getContent(), true);
+
+        $this->assertCount(0, $tasks);
+    }
 }

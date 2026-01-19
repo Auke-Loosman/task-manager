@@ -12,4 +12,6 @@ interface TaskRepositoryInterface
 
     /** @return Task[] */
     public function findAll(): array;
+
+    public function remove(Task $task): void;
 }

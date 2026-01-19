@@ -13,9 +13,10 @@ use App\Presentation\Http\Response\TaskResponse;
 use Symfony\Component\Messenger\Stamp\HandledStamp;
 use App\Application\Command\Task\UpdateTaskStatusCommand;
 use App\Presentation\Http\Request\UpdateTaskStatusRequest;
+use App\Application\Command\Task\DeleteTaskCommand;
+use Symfony\Component\HttpFoundation\Response;
 use Symfony\Bundle\FrameworkBundle\Controller\AbstractController;
 use Symfony\Component\HttpFoundation\JsonResponse;
-use Symfony\Component\HttpFoundation\Response;
 use Symfony\Component\Messenger\MessageBusInterface;
 use Symfony\Component\Routing\Attribute\Route;
 use Symfony\Component\Validator\Validator\ValidatorInterface;
@@ -98,6 +99,23 @@ final class TaskController extends AbstractController
         $commandBus->dispatch(
             new UpdateTaskStatusCommand($id, $requestDto->status)
         );
+
+        return $this->json(null, Response::HTTP_NO_CONTENT);
+    }
+
+    #[Route('/tasks/{id}', name: 'delete_task', methods: ['DELETE'])]
+    public function delete(
+        string $id,
+        MessageBusInterface $commandBus
+    ): JsonResponse {
+        try {
+            $commandBus->dispatch(new DeleteTaskCommand($id));
+        } catch (\DomainException $e) {
+            return $this->json(
+                ['error' => $e->getMessage()],
+                Response::HTTP_CONFLICT
+            );
+        }
 
         return $this->json(null, Response::HTTP_NO_CONTENT);
     }

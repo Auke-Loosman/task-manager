@@ -78,4 +78,16 @@ final class DoctrineTaskRepository implements TaskRepositoryInterface
             $entities
         );
     }
+
+    public function remove(Task $task): void
+    {
+        $entity = $this->entityManager
+            ->getRepository(TaskEntity::class)
+            ->find($task->id()->value());
+
+        if ($entity !== null) {
+            $this->entityManager->remove($entity);
+            $this->entityManager->flush();
+        }
+    }
 }
