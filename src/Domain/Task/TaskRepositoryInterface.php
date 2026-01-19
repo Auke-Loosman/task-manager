@@ -9,4 +9,7 @@ interface TaskRepositoryInterface
     public function save(Task $task): void;
 
     public function findById(string $id): ?Task;
+
+    /** @return Task[] */
+    public function findAll(): array;
 }
