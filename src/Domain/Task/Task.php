@@ -15,6 +15,11 @@ final class Task
         $this->status = 'todo';
     }
 
+    public function markAsInProgress(): void
+    {
+        $this->status = 'in_progress';
+    }
+
     public function title(): string
     {
         return $this->title;
@@ -25,3 +30,4 @@ final class Task
         return $this->status;
     }
 }
+

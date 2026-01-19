@@ -16,4 +16,14 @@ final class TaskTest extends TestCase
         $this->assertSame('Write assignment', $task->title());
         $this->assertSame('todo', $task->status());
     }
+
+    public function testTaskCanBeMarkedAsInProgress(): void
+{
+    $task = new Task('Write assignment');
+
+    $task->markAsInProgress();
+
+    $this->assertSame('in_progress', $task->status());
+}
+
 }
