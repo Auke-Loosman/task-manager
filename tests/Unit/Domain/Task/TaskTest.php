@@ -18,12 +18,20 @@ final class TaskTest extends TestCase
     }
 
     public function testTaskCanBeMarkedAsInProgress(): void
-{
-    $task = new Task('Write assignment');
+    {
+        $task = new Task('Write assignment');
 
-    $task->markAsInProgress();
+        $task->markAsInProgress();
 
-    $this->assertSame('in_progress', $task->status());
-}
+        $this->assertSame('in_progress', $task->status());
+    }
 
+    public function testTaskCannotBeMarkedAsDoneWhenNotInProgress(): void
+    {
+        $this->expectException(\DomainException::class);
+
+        $task = new Task('Write assignment');
+
+        $task->markAsDone();
+    }
 }

@@ -29,5 +29,15 @@ final class Task
     {
         return $this->status;
     }
+
+    public function markAsDone(): void
+    {
+        if ($this->status !== 'in_progress') {
+            throw new \DomainException('Task must be in progress before it can be marked as done.');
+        }
+
+        $this->status = 'done';
+    }
+
 }
 
